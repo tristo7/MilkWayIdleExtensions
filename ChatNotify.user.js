@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat Notify
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Notify chat messages
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=milkywayidle.com
 // @author       tristo7
