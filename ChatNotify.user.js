@@ -30,10 +30,6 @@ window.WebSocket = function(...args){
   return socket;
 };
 
-const addListener = (action) => {
-    window.cowsocket.addEventListener('message', action);
-};
-
 const interceptChat = (msg) => {
     const data = JSON.parse(msg.data);
 
@@ -50,9 +46,9 @@ const interceptChat = (msg) => {
 };
 
 const displayMessage = (message) => {
-    let note = new Notification( message, {icon: "/assets/images/logos/logo_transparent_570.svg"} );
+    let note = new Notification( message );
     note.onclick = function(){window.focus(); this.close()};
-    setTimeout(()=>{note.close()}, 10*1000);
+    setTimeout(()=>{note.close()}, 3*1000);
   }
 
 (async function() {
