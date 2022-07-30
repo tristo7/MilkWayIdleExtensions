@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Chat Notify
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Notify chat messages when unfocused
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=milkywayidle.com
 // @author       tristo7
@@ -14,67 +14,64 @@
 
 const nativeWebSocket = window.WebSocket;
 window.WebSocket = function (...args) {
-    const socket = new nativeWebSocket(...args);
-    window.cowsocket = socket;
-    window.cowsocket.addEventListener('message', function handler(e) {
-        let msg = JSON.parse(e.data);
-        if (msg.type == 'init_character_info') {
-            window.init_character_info = msg;
-        }
-        if (typeof window.init_character_info !== 'undefined') {
-            window.cowsocketready = true;
-            console.log(`Attached to WebSocket.`);
-            this.removeEventListener('message', handler);
-        }
-    });
-    return socket;
+  const socket = new nativeWebSocket(...args);
+  window.cowsocket = socket;
+  window.cowsocket.addEventListener("message", function handler(e) {
+    let msg = JSON.parse(e.data);
+    if (msg.type == "init_character_info") {
+      window.init_character_info = msg;
+    }
+    if (typeof window.init_character_info !== "undefined") {
+      window.cowsocketready = true;
+      console.log(`Attached to WebSocket.`);
+      this.removeEventListener("message", handler);
+    }
+  });
+  return socket;
 };
 
 const interceptChat = (msg) => {
-    if (document.hasFocus()) {
-        return;
-    }
+  if (document.hasFocus()) {
+    return;
+  }
 
-    const data = JSON.parse(msg.data);
+  const data = JSON.parse(msg.data);
 
-    const {
-        type,
-        message
-    } = data;
-    if (type !== 'chat_message_received') {
-        return;
-    }
+  const { type } = data;
 
-    const {
-        senderName,
-        receiverName,
-        channelTypeHrid
-    } = message;
+  if (type !== "chat_message_received") {
+    return;
+  }
 
-    if (channelTypeHrid === '/chat_channel_types/whisper' && receiverName === window.init_character_info.user.username) {
-        displayMessage(`New whisper from ${senderName}`)
-    }
+  const { senderName, receiverName, channelTypeHrid } = data.message;
+
+  if (
+    channelTypeHrid === "/chat_channel_types/whisper" &&
+    receiverName === window.init_character_info.user.username
+  ) {
+    displayMessage(`New whisper from ${senderName}`);
+  }
 };
 
 const displayMessage = (message) => {
-    let note = new Notification(message);
-    note.onclick = function () {
-        window.focus();
-        this.close()
-    };
-    setTimeout(() => {
-        note.close()
-    }, 3 * 1000);
-}
+  let note = new Notification(message);
+  note.onclick = function () {
+    window.focus();
+    this.close();
+  };
+  setTimeout(() => {
+    note.close();
+  }, 3 * 1000);
+};
 
 (async function () {
-    'use strict';
+  "use strict";
 
-    while (!window.cowsocketready) {
-        await new Promise(r => setTimeout(r, 250));
-    }
+  while (!window.cowsocketready) {
+    await new Promise((r) => setTimeout(r, 250));
+  }
 
-    Notification.requestPermission();
+  Notification.requestPermission();
 
-    window.cowsocket.addEventListener('message', interceptChat);
+  window.cowsocket.addEventListener("message", interceptChat);
 })();
